@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Message</title>
+  </head>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&display=swap");
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+    }
+    .message {
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      width: 100%;
+      gap: 40px;
+    }
+    h1 {
+      font-size: 250px;
+      font-family: "Merriweather";
+      margin: 0;
+    }
+    .glowing-txt {
+      text-shadow: -2px -2px 5px #fff, 2px -2px 5px #fff, -2px 2px 5px #fff,
+        2px 2px 5px #fff;
+      animation: text-flicker 3s linear infinite;
+    }
+    .faulty-letter {
+      opacity: 0.5;
+      animation: faulty-flicker 2s linear infinite;
+    }
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 150px;
+      }
+      #graphCanvas {
+        width: 200px;
+        height: 200px;
+      }
+    }
+    @media (max-width: 480px) {
+      .message {
+        flex-direction: column;
+        gap: 0px;
+      }
+    }
+    @keyframes faulty-flicker {
+      0% {
+        opacity: 0.1;
+      }
+      2% {
+        opacity: 0.1;
+      }
+      4% {
+        opacity: 0.5;
+      }
+      19% {
+        opacity: 0.5;
+      }
+      21% {
+        opacity: 0.1;
+      }
+      23% {
+        opacity: 1;
+      }
+      80% {
+        opacity: 0.5;
+      }
+      83% {
+        opacity: 0.4;
+      }
+
+      87% {
+        opacity: 1;
+      }
+    }
+    @keyframes text-flicker {
+      0% {
+        opacity: 0.1;
+      }
+
+      2% {
+        opacity: 0.6;
+      }
+
+      8% {
+        opacity: 0.1;
+      }
+
+      9% {
+        opacity: 1;
+      }
+
+      12% {
+        opacity: 0.1;
+      }
+      20% {
+        opacity: 1;
+      }
+      25% {
+        opacity: 0.3;
+      }
+      30% {
+        opacity: 1;
+      }
+
+      70% {
+        opacity: 0.7;
+      }
+      72% {
+        opacity: 0.2;
+      }
+
+      77% {
+        opacity: 0.9;
+      }
+      100% {
+        opacity: 0.9;
+      }
+    }
+  </style>
+  <body>
+    <div class="message">
+      <h1 class="glowing-txt">I</h1>
+      <canvas id="graphCanvas" width="400" height="400"></canvas>
+      <h1 class="glowing-txt"><span class="faulty-letter">U</span></h1>
+    </div>
+    <script>
+      const canvas = document.getElementById("graphCanvas");
+      const ctx = canvas.getContext("2d");
+
+      let a = 0;
+      const maxA = 20;
+
+      // Function to calculate f(x)
+      function f(x) {
+        const e = Math.E;
+        const pi = Math.PI;
+        return (
+          Math.pow(Math.abs(x), 2 / 3) +
+          (e * Math.sqrt(pi - x * x) * Math.sin(a * pi * x)) / 3
+        );
+      }
+
+      // Canvas settings
+      const width = canvas.width;
+      const height = canvas.height;
+      const margin = 50;
+
+      // Axis ranges
+      const xRange = [-2, 2];
+      const yRange = [-1.5, 2.5];
+      const xStep = 0.5;
+      const yStep = 0.5;
+
+      // Scale factors
+      const xScale = (width - 2 * margin) / (xRange[1] - xRange[0]);
+      const yScale = (height - 2 * margin) / (yRange[1] - yRange[0]);
+
+      // Draw the graph of f(x)
+      function drawGraph() {
+        ctx.clearRect(0, 0, width, height);
+
+        ctx.shadowBlur = 30; // Blur level
+        ctx.shadowColor = "rgb(255, 0, 0)";
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let x = xRange[0]; x <= xRange[1]; x += 0.01) {
+          const y = f(x);
+          if (y >= yRange[0] && y <= yRange[1]) {
+            const xPos = margin + (x - xRange[0]) * xScale;
+            const yPos = height - margin - (y - yRange[0]) * yScale;
+            ctx.lineTo(xPos, yPos);
+          }
+        }
+        ctx.stroke();
+      }
+
+      // Function to update 'a' and redraw the graph
+      function updateGraph() {
+        if (a <= maxA) {
+          drawGraph();
+          a += 0.05;
+        } else {
+          clearInterval(intervalId);
+        }
+      }
+
+      const message = document.querySelector(".message");
+
+      function applyStylesWithDelay() {
+        message.style.textShadow = "none";
+        message.style.animation = "none";
+
+        const glowingTxt = message.querySelectorAll(".glowing-txt");
+        glowingTxt.forEach((txt) => {
+          txt.style.animation = "none";
+        });
+
+        const faultyLetters = message.querySelectorAll(".faulty-letter");
+        faultyLetters.forEach((letter) => {
+          letter.style.animation = "none";
+          letter.style.opacity = 1;
+        });
+
+        const messageBefore = message.querySelector("::before");
+        if (messageBefore) {
+          messageBefore.style.filter = "blur(1.5em)";
+          messageBefore.style.opacity = 1;
+        }
+
+        const messageAfter = message.querySelector("::after");
+        if (messageAfter) {
+          messageAfter.style.opacity = 1;
+        }
+      }
+
+      setTimeout(applyStylesWithDelay, 6000);
+      // Start updating the graph every 0.5 seconds
+      const intervalId = setInterval(updateGraph, 30);
+    </script>
+  </body>
+</html>
